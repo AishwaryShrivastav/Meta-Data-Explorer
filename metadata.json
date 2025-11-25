@@ -1,0 +1,5 @@
+{
+  "name": "MetaLens - File Metadata Editor",
+  "description": "A powerful tool to inspect, edit, and enhance file metadata using AI analysis. View technical details, edit file properties, and generate descriptive metadata using Gemini.",
+  "requestFramePermissions": []
+}
