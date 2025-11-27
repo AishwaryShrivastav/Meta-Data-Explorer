@@ -30,6 +30,13 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
     fileInputRef.current?.click();
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileInputRef.current?.click();
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       onFileSelect(e.target.files[0]);
@@ -39,16 +46,20 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div
+        role="button"
+        tabIndex={0}
         onClick={handleClick}
+        onKeyDown={handleKeyDown}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        aria-label="Upload file area. Drag and drop or click to select a file."
         className={`
           relative group cursor-pointer 
           border-2 border-dashed rounded-2xl p-12 
           flex flex-col items-center justify-center text-center
           transition-all duration-300 ease-in-out
-          backdrop-blur-sm
+          backdrop-blur-sm focus:outline-none focus:ring-4 focus:ring-blue-500/30
           ${isDragging 
             ? 'border-blue-500 bg-blue-500/10 scale-[1.02] shadow-2xl shadow-blue-500/20' 
             : 'border-slate-700 hover:border-blue-400 hover:bg-slate-800/50 bg-slate-900/30'}
@@ -59,6 +70,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
           ref={fileInputRef}
           onChange={handleInputChange}
           className="hidden"
+          aria-hidden="true"
         />
         
         <div className={`p-5 rounded-full mb-6 transition-all duration-300 ${isDragging ? 'bg-blue-500/20 text-blue-400 scale-110' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-blue-300 shadow-lg'}`}>

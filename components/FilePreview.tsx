@@ -6,17 +6,58 @@ interface FilePreviewProps {
 }
 
 const FilePreview: React.FC<FilePreviewProps> = ({ file }) => {
-  const [preview, setPreview] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (file.type.startsWith('image/')) {
+    // Create object URLs for Image, Video, and Audio types
+    if (file.type.startsWith('image/') || file.type.startsWith('video/') || file.type.startsWith('audio/')) {
       const url = URL.createObjectURL(file);
-      setPreview(url);
+      setPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
     } else {
-      setPreview(null);
+      setPreviewUrl(null);
     }
   }, [file]);
+
+  const renderPreviewMedia = () => {
+    if (!previewUrl) return getFileIcon();
+
+    if (file.type.startsWith('image/')) {
+      return (
+        <img 
+          src={previewUrl} 
+          alt="Preview" 
+          className="max-w-full max-h-[400px] object-contain shadow-lg rounded-md" 
+        />
+      );
+    }
+    
+    if (file.type.startsWith('video/')) {
+      return (
+        <video 
+          controls 
+          className="max-w-full max-h-[400px] shadow-lg rounded-md w-full"
+        >
+          <source src={previewUrl} type={file.type} />
+          Your browser does not support the video tag.
+        </video>
+      );
+    }
+
+    if (file.type.startsWith('audio/')) {
+      return (
+        <div className="flex flex-col items-center justify-center p-8 w-full">
+           <svg className="w-16 h-16 text-yellow-500 mb-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
+           <audio controls className="w-full max-w-xs">
+            <source src={previewUrl} type={file.type} />
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+      );
+    }
+
+    return getFileIcon();
+  };
 
   const getFileIcon = () => {
     if (file.type.includes('pdf')) return (
@@ -25,15 +66,12 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file }) => {
     if (file.type.includes('text')) return (
       <svg className="w-20 h-20 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
     );
-    if (file.type.includes('video')) return (
-      <svg className="w-20 h-20 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-    );
-    if (file.type.includes('audio')) return (
-      <svg className="w-20 h-20 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
-    );
     // Default
     return (
-      <svg className="w-20 h-20 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+      <div className="flex flex-col items-center">
+        <svg className="w-20 h-20 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+        <p className="mt-2 text-slate-500">Preview not available</p>
+      </div>
     );
   };
 
@@ -44,16 +82,9 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file }) => {
         File Preview
       </h2>
       
-      <div className="flex-grow w-full flex flex-col items-center justify-center min-h-[200px] mb-8 bg-slate-900/50 rounded-lg overflow-hidden border border-slate-700/50 relative">
+      <div className="flex-grow w-full flex flex-col items-center justify-center min-h-[200px] mb-8 bg-slate-900/50 rounded-lg overflow-hidden border border-slate-700/50 relative p-2">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none"></div>
-        {preview ? (
-          <img src={preview} alt="Preview" className="max-w-full max-h-[400px] object-contain shadow-lg" />
-        ) : (
-          <div className="flex flex-col items-center p-8">
-            {getFileIcon()}
-            <p className="mt-4 text-slate-500 text-sm font-medium uppercase tracking-wider">No Preview Available</p>
-          </div>
-        )}
+        {renderPreviewMedia()}
       </div>
 
       <div className="w-full space-y-4">
@@ -71,6 +102,13 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file }) => {
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Last Modified (Original)</p>
           <p className="text-slate-200 font-mono">{new Date(file.lastModified).toLocaleString()}</p>
         </div>
+
+        {file.webkitRelativePath && (
+          <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700/50">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Relative Path</p>
+            <p className="text-slate-200 font-mono break-all text-xs">{file.webkitRelativePath}</p>
+          </div>
+        )}
       </div>
     </div>
   );
